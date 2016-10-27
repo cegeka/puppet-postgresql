@@ -4,6 +4,7 @@ class postgresql::params inherits postgresql::globals {
   $postgis_version            = $postgresql::globals::globals_postgis_version
   $listen_addresses           = 'localhost'
   $port                       = 5432
+  $log_line_prefix            = '%t '
   $ip_mask_deny_postgres_user = '0.0.0.0/0'
   $ip_mask_allow_all_users    = '127.0.0.1/32'
   $ipv4acls                   = []
@@ -14,11 +15,12 @@ class postgresql::params inherits postgresql::globals {
   $service_enable             = true
   $service_manage             = true
   $service_restart_on_change  = true
-  $service_provider           = $service_provider
+  $service_provider           = $postgresql::globals::service_provider
   $manage_pg_hba_conf         = pick($manage_pg_hba_conf, true)
   $manage_pg_ident_conf       = pick($manage_pg_ident_conf, true)
   $manage_recovery_conf       = pick($manage_recovery_conf, false)
   $package_ensure             = 'present'
+  $module_workdir             = pick($module_workdir,'/tmp')
 
   # Amazon Linux's OS Family is 'Linux', operating system 'Amazon'.
   case $::osfamily {
@@ -30,7 +32,7 @@ class postgresql::params inherits postgresql::globals {
       $version_parts      = split($version, '[.]')
       $package_version    = "${version_parts[0]}${version_parts[1]}"
 
-      if $version == $postgresql::globals::default_version {
+      if $version == $postgresql::globals::default_version and $::operatingsystem != 'Amazon' {
         $client_package_name    = pick($client_package_name, 'postgresql')
         $server_package_name    = pick($server_package_name, 'postgresql-server')
         $contrib_package_name   = pick($contrib_package_name,'postgresql-contrib')
@@ -56,7 +58,7 @@ class postgresql::params inherits postgresql::globals {
         $plperl_package_name    = pick($plperl_package_name, "postgresql${package_version}-plperl")
         $plpython_package_name  = pick($plpython_package_name, "postgresql${package_version}-plpython")
         $service_name           = $::operatingsystem ? {
-          'Amazon' => pick($service_name, "postgresql${version}"),
+          'Amazon' => pick($service_name, "postgresql${version_parts[0]}${version_parts[1]}"),
           default  => pick($service_name, "postgresql-${version}"),
         }
         $bindir                 = $::operatingsystem ? {
@@ -112,7 +114,7 @@ class postgresql::params inherits postgresql::globals {
       $psql_path              = pick($psql_path, "${bindir}/psql")
 
       $service_status         = $service_status
-      $service_reload         = "service ${service_name} reload"
+      $service_reload         = "systemctl reload ${service_name}"
       $python_package_name    = pick($python_package_name, 'python-psycopg2')
       # Archlinux does not have a perl::DBD::Pg package
       $perl_package_name      = pick($perl_package_name, 'undef')
@@ -159,6 +161,9 @@ class postgresql::params inherits postgresql::globals {
       if $::operatingsystem == 'Debian' and versioncmp($::operatingsystemrelease, '8.0') >= 0 {
         # Jessie uses systemd
         $service_status = pick($service_status, "/usr/sbin/service ${service_name}@*-main status")
+      } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+        # Ubuntu releases since vivid use systemd
+        $service_status = pick($service_status, "/usr/sbin/service ${service_name} status")
       } else {
         $service_status = pick($service_status, "/etc/init.d/${service_name} status | /bin/egrep -q 'Running clusters: .+|online'")
       }

@@ -1,3 +1,40 @@
+## Supported Release 4.8.0
+### Summary
+This release primarily fixes an issue with `postgresql_conf` values of ipaddresses being considered floats and not getting quoted.
+
+#### Features
+- Add `default_connect_settings` parameter to `postgresql::server`
+- Running under strict variables is now supported
+- Add timestamps into logs by default
+
+#### Bugfixes
+- Obscure password in postgresql\_psql type
+- Fix ip address quoting in postgresql\_conf type
+- Fix handling of systemd service on Ubuntu
+- Mark log_min_duration_statement setting as requiring a service restart
+- Add fixes for Fedora 23, Fedora 24, FreeBSD, OpenBSD
+- Fix environment handling to avoid "Overriding environment setting" message
+- Work around PUP-6385, using empty arrays instead of undef when specifying resource relationships
+- README editorial pass
+- Reduce whitespace in templates
+- Update build/test infrastructure
+
+## Supported Release 4.7.1
+### Summary
+This release contains some bugfixes and documentation updates.
+
+#### Bugfixes
+- (MODULES-3024) Quote database objects when creating databases.
+- Properly escape case where password ends with '$'.
+- Fixes password change when postgres is configure to non-standard port.
+- Unpins concat dependency to be able to use concat 2.x.
+- Workaround to fix installing on Amazon Linux.
+- Fixes proper defaulting of `$service_provider` parameter.
+- Fixes postgres server init script naming on Amazon Linux.
+- Fixes service reload parameter on Arch Linux.
+- Adds missing onlyif_function to sequence grant code.
+- Fixes to the markdown of the README.
+
 ## Supported Release 4.7.0
 ### Summary
 A release with a considerable amount of new features, including remote db support and several platform support updates. Various bugfixes including several to address warnings and a sizable README update.
@@ -24,7 +61,6 @@ A release with a considerable amount of new features, including remote db suppor
 - Removal of extra blanks and backslashes in README.
 - Double quotes now used around database name to prevent syntax error.
 - Removes ruby 1.8.7 and puppet 2.7 from travis-ci jobs.
-- Removed inherits postgresql::params.
 - Fixed paths to work on Amazon Linux.
 - Fixed quotes around locale options.
 - Huge README update.
@@ -544,7 +580,7 @@ the stage for the large scale refactoring work of 3.0.0.
 ####Features
 
 
-####Bugfixes 
+####Bugfixes
 - Use boolean for refreshonly.
 - Fix postgresql::plperl documentation.
 - Add two missing parameters to config::beforeservice

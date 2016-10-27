@@ -96,11 +96,13 @@ define postgresql::server::grant (
       validate_string($unless_privilege,'USAGE','ALL','ALL PRIVILEGES')
       $unless_function = 'has_sequence_privilege'
       $on_db = $db
+      $onlyif_function = undef
     }
     'ALL SEQUENCES IN SCHEMA': {
       validate_string($_privilege,'USAGE','ALL','ALL PRIVILEGES')
       $unless_function = 'custom'
       $on_db = $db
+      $onlyif_function = undef
 
       $schema = $object_name
 
@@ -109,7 +111,7 @@ define postgresql::server::grant (
         'ALL PRIVILEGES' => 'USAGE',
         default          => $_privilege,
       }
-      
+
       # This checks if there is a difference between the sequences in the
       # specified schema and the sequences for which the role has the specified
       # privilege. It uses the EXCEPT clause which computes the set of rows

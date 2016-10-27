@@ -27,7 +27,7 @@ class postgresql::globals (
   $pg_ident_conf_path       = undef,
   $postgresql_conf_path     = undef,
   $recovery_conf_path       = undef,
-  $default_connect_settings = undef,
+  $default_connect_settings = {},
 
   $pg_hba_conf_defaults     = undef,
 
@@ -36,6 +36,7 @@ class postgresql::globals (
   $bindir                   = undef,
   $xlogdir                  = undef,
   $logdir                   = undef,
+  $log_line_prefix          = undef,
 
   $user                     = undef,
   $group                    = undef,
@@ -54,17 +55,19 @@ class postgresql::globals (
   $manage_recovery_conf     = undef,
 
   $manage_package_repo      = undef,
+  $module_workdir           = undef,
 ) {
   # We are determining this here, because it is needed by the package repo
   # class.
   $default_version = $::osfamily ? {
     /^(RedHat|Linux)/ => $::operatingsystem ? {
       'Fedora' => $::operatingsystemrelease ? {
-        /^(22)$/ => '9.4',
-        /^(21)$/ => '9.3',
+        /^(24)$/       => '9.5',
+        /^(22|23)$/    => '9.4',
+        /^(21)$/       => '9.3',
         /^(18|19|20)$/ => '9.2',
-        /^(17)$/ => '9.1',
-        default => undef,
+        /^(17)$/       => '9.1',
+        default        => undef,
       },
       'Amazon' => '9.2',
       default => $::operatingsystemrelease ? {
@@ -88,12 +91,11 @@ class postgresql::globals (
         default => undef,
       },
       'Ubuntu' => $::operatingsystemrelease ? {
-        /^(15.10)$/ => '9.4',
-        /^(15.04)$/ => '9.4',
-        /^(14.10)$/ => '9.4',
-        /^(14.04)$/ => '9.3',
-        /^(11.10|12.04|12.10|13.04|13.10)$/ => '9.1',
         /^(10.04|10.10|11.04)$/ => '8.4',
+        /^(11.10|12.04|12.10|13.04|13.10)$/ => '9.1',
+        /^(14.04)$/ => '9.3',
+        /^(14.10|15.04|15.10)$/ => '9.4',
+        /^(16.04)$/ => '9.5',
         default => undef,
       },
       default => undef,
@@ -106,6 +108,7 @@ class postgresql::globals (
     'OpenBSD' => $::operatingsystemrelease ? {
       /5\.6/ => '9.3',
       /5\.[7-9]/ => '9.4',
+      /6\.[0-9]/ => '9.5',
     },
     'Suse' => $::operatingsystem ? {
       'SLES' => $::operatingsystemrelease ? {
